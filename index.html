@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engenharia Prometals</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg-primary:#fff;--bg-secondary:#f5f4f0;--text-primary:#1a1a1a;--text-secondary:#6b6b66;--text-tertiary:#9b9a94;--border-tertiary:rgba(0,0,0,0.08);--border-secondary:rgba(0,0,0,0.16);--radius-md:8px;--green:#1D9E75;--green-dark:#0F6E56;--accent-bg:#E6F1FB;--accent-text:#0C447C;--accent-border:#85B7EB;}
+@media (prefers-color-scheme:dark){:root{--bg-primary:#1c1c1a;--bg-secondary:#262624;--text-primary:#f0efe9;--text-secondary:#b4b2a9;--text-tertiary:#888780;--border-tertiary:rgba(255,255,255,0.08);--border-secondary:rgba(255,255,255,0.16);--accent-bg:#15314d;--accent-text:#9cc4ec;--accent-border:#2f5a85;}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;color:var(--text-primary);background:var(--bg-secondary);padding:20px}
+.wrap{max-width:1400px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:0.5px solid var(--border-tertiary);margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.top-t{font-size:17px;font-weight:600;display:flex;align-items:center;gap:7px}
+.sync-bar{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sync-dot.saving{background:#EF9F27;animation:pulse 1s infinite}
+.sync-dot.error{background:#E24B4A}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.config-warning{background:#FCEBEB;color:#791F1F;border-radius:var(--radius-md);padding:13px 15px;margin-bottom:14px;font-size:14px;line-height:1.6;display:none}
+.config-warning.show{display:block}
+.config-warning code{background:rgba(0,0,0,0.08);padding:2px 6px;border-radius:4px;font-size:13px}
+.main{display:grid;grid-template-columns:250px 1fr;gap:12px}
+@media (max-width:800px){.main{grid-template-columns:1fr}}
+.side{align-self:start;display:flex;flex-direction:column;gap:12px}
+.box{border:0.5px solid var(--border-tertiary);border-radius:12px;background:var(--bg-primary);padding:12px}
+.btn{font-size:13px;padding:9px 14px;border-radius:var(--radius-md);border:0.5px solid var(--border-secondary);background:var(--bg-primary);color:var(--text-primary);cursor:pointer;display:inline-flex;align-items:center;gap:6px;width:100%;justify-content:center;font-family:inherit}
+.btn:hover{background:var(--bg-secondary)}
+.btn-p{background:var(--green);border-color:var(--green);color:#fff;font-weight:500}
+.btn-p:hover{background:var(--green-dark)}
+.form label{font-size:12px;color:var(--text-secondary);display:block;margin:9px 0 3px}
+.form input,.form select,.form textarea{width:100%;font-size:13px;padding:8px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-secondary);background:var(--bg-primary);color:var(--text-primary);outline:none;font-family:inherit}
+.form textarea{min-height:50px;resize:vertical}
+.ph{font-size:12px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.pool.drag-over{outline:2px dashed var(--accent-border);outline-offset:-4px}
+.hint{font-size:11px;color:var(--text-tertiary);margin-top:9px;text-align:center;line-height:1.45}
+.wk{display:grid;grid-template-columns:repeat(5,minmax(115px,1fr));gap:8px;overflow-x:auto}
+.day{border:0.5px solid var(--border-tertiary);border-radius:12px;overflow:hidden;background:var(--bg-primary)}
+.day.today{outline:2px solid var(--accent-border);outline-offset:-1px}
+.dh{padding:8px;background:var(--bg-secondary);border-bottom:0.5px solid var(--border-tertiary);font-size:12px;font-weight:500;text-align:center;display:flex;align-items:center;justify-content:center;gap:5px}
+.today-tag{font-size:9px;background:var(--accent-bg);color:var(--accent-text);padding:1px 5px;border-radius:999px;font-weight:500}
+.slot{padding:8px;border-bottom:0.5px solid var(--border-tertiary);min-height:60px}
+.slot:last-child{border-bottom:none}
+.sl{font-size:10px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.slot.drag-over{background:var(--accent-bg)}
+.fin{margin-top:12px;border:0.5px dashed var(--border-secondary);border-radius:12px;background:var(--bg-primary);padding:11px}
+.fin.drag-over{background:var(--accent-bg);border-color:var(--accent-border)}
+.fin-cards{display:flex;flex-wrap:wrap;gap:7px}
+.fin-cards .chip{margin-bottom:0;min-width:150px}
+.chip{border-radius:8px;border:0.5px solid var(--border-tertiary);border-left-width:3px;padding:7px 9px;margin-bottom:6px;cursor:grab;background:var(--bg-primary)}
+.chip:hover{background:var(--bg-secondary)}
+.chip:active{cursor:grabbing}
+.chip.dragging{opacity:.4}
+.chip.t-interna{border-left-color:#378ADD}
+.chip.t-terceiro{border-left-color:#639922}
+.chip.t-diversos{border-left-color:#BA7517}
+.chip.done{opacity:.6}
+.chip.done .ct{text-decoration:line-through}
+.ct{font-size:12px;font-weight:500;line-height:1.35;margin-bottom:4px}
+.cm{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cr{font-size:10px;color:var(--text-secondary)}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.d-alta{background:#E24B4A}
+.d-media{background:#EF9F27}
+.d-baixa{background:#639922}
+.empty{font-size:11px;color:var(--text-tertiary);text-align:center;padding:9px 0}
+.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-wrap.open{display:flex}
+.modal{background:var(--bg-primary);border-radius:12px;border:0.5px solid var(--border-secondary);padding:22px;width:460px;max-width:100%;max-height:86vh;overflow-y:auto}
+.modal-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.modal-title{font-size:16px;font-weight:500;line-height:1.4}
+.modal-close{background:none;border:none;cursor:pointer;font-size:19px;color:var(--text-tertiary);padding:0;flex-shrink:0}
+.badge{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:500;display:inline-block}
+.b-interna{background:#E6F1FB;color:#0C447C}
+.b-terceiro{background:#EAF3DE;color:#27500A}
+.b-diversos{background:#FAEEDA;color:#633806}
+.b-alta{background:#FCEBEB;color:#791F1F}
+.b-media{background:#FAEEDA;color:#633806}
+.b-baixa{background:#EAF3DE;color:#27500A}
+.m-info{display:flex;gap:18px;flex-wrap:wrap;padding:12px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:14px}
+.m-info span:first-child{font-size:11px;color:var(--text-secondary);display:block;margin-bottom:2px}
+.m-info span:last-child{font-size:13px;font-weight:500}
+.m-obs{font-size:13px;color:var(--text-secondary);line-height:1.6;padding:11px 14px;background:var(--bg-secondary);border-radius:var(--radius-md);margin-bottom:14px}
+.m-lbl{font-size:12px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px}
+.log-e{display:flex;gap:9px;padding:9px 0;border-bottom:0.5px solid var(--border-tertiary)}
+.btn-x{font-size:12px;padding:4px 9px;border-radius:var(--radius-md);border:0.5px solid var(--border-secondary);background:none;color:var(--text-secondary);cursor:pointer;display:inline-flex;align-items:center;gap:4px;width:auto}
+.btn-x:hover{background:var(--bg-secondary)}
+.btn-x-d{color:#A32D2D}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.row .btn{width:auto;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="top-t"><i class="ti ti-building-factory-2" aria-hidden="true"></i>Engenharia Prometals</span>
+    <div class="sync-bar"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Conectando...</span></div>
+  </div>
+
+  <div class="config-warning" id="config-warning"><strong>Configuração pendente:</strong> edite <code>app.js</code> e preencha <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code>.</div>
+
+  <div class="main">
+    <div class="side">
+      <div class="box">
+        <button class="btn btn-p" onclick="toggleForm()"><i class="ti ti-plus" aria-hidden="true"></i>Nova entrada</button>
+        <div class="form" id="form" style="display:none">
+          <label>Título</label><input id="f-title" placeholder="Ex: Disco 2540-2...">
+          <label>Tipo</label><select id="f-type"><option value="interna">Produto Interno</option><option value="terceiro">Produto Terceiro</option><option value="diversos">Diversos</option></select>
+          <label>Responsável</label><select id="f-resp"><option value="Gabriel">Gabriel</option><option value="Anderson">Anderson</option><option value="Ambos">Ambos</option></select>
+          <label>Prioridade</label><select id="f-prio"><option value="Alta">Alta</option><option value="Média">Média</option><option value="Baixa">Baixa</option></select>
+          <label>Observação</label><textarea id="f-obs" placeholder="Cliente, medidas..."></textarea>
+          <button class="btn btn-p" style="margin-top:10px" onclick="addItem()"><i class="ti ti-check" aria-hidden="true"></i>Salvar</button>
+        </div>
+      </div>
+
+      <div class="box pool" id="pool" ondragover="dgOver(event,this)" ondragleave="dgLeave(this)" ondrop="dropPool(event)">
+        <div class="ph"><i class="ti ti-inbox" aria-hidden="true"></i>Afazeres sem dia</div>
+        <div id="pool-list"></div>
+        <div class="hint">Arraste para um dia →<br>ou para "Finalizados" ao terminar.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="wk" id="wk"></div>
+      <div class="fin" id="fin" ondragover="dgOver(event,this)" ondragleave="dgLeave(this)" ondrop="dropFin(event)">
+        <div class="ph"><i class="ti ti-circle-check" aria-hidden="true"></i>Finalizados</div>
+        <div class="fin-cards" id="fin-cards"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-wrap" id="modal-wrap" onclick="closeModal(event)"><div class="modal" id="modal-body"></div></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
